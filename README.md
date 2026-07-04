@@ -17,8 +17,11 @@ Pages).
    - point the camera at the QR code on the screen (it opens the controller with
      the code pre-filled), **or**
    - open the same site → **Join** and type the 4-digit code.
-3. The host presses **Start** (or the space/enter key). Move with the on-screen
-   joystick, tap **DASH** for a speed burst, and race to collect coins.
+3. The host presses **Start** (or Enter). Move with the on-screen joystick, tap
+   **DASH** for a speed burst, and race to collect coins.
+
+**Playing by yourself?** On the host screen tap **Play solo with keyboard** — no
+phone needed. Move with the arrow keys / WASD and press **Space** to dash.
 
 ## How it works
 

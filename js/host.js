@@ -17,6 +17,7 @@
   const ovSub = document.getElementById('ovSub');
   const ovResults = document.getElementById('ovResults');
   const startBtn = document.getElementById('startBtn');
+  const soloBtn = document.getElementById('soloBtn');
 
   // ---- Tunables ----
   const ROUND_SECONDS = 90;
@@ -40,6 +41,13 @@
   const players = new Map(); // peerId -> player
   let coins = [];
   let colorCursor = 0;
+  let soloId = null;          // id of the local keyboard player (single-player)
+  const keysDown = {};        // currently-held keys for the solo player
+
+  // Optional debug hook (only with ?dbg=1) for automated testing.
+  if (location.search.indexOf('dbg=1') !== -1) {
+    window.__arcade = { players, keysDown, get soloId() { return soloId; }, get phase() { return phase; }, get coins() { return coins; } };
+  }
 
   /* ---------------- Canvas sizing ---------------- */
   function resize() {
@@ -64,10 +72,11 @@
   const net = new HostNet();
 
   net.onError = (message) => {
-    ovTitle.textContent = 'Connection problem';
-    ovSub.textContent = message;
-    overlay.classList.remove('hidden');
-    startBtn.style.display = 'none';
+    // Online multiplayer is unavailable, but solo play still works — so we
+    // just note it in the join box instead of blocking the whole screen.
+    codeEl.textContent = '—';
+    const hint = document.querySelector('.joinbox .hint');
+    if (hint) hint.textContent = message;
   };
 
   net.onReady = (code) => {
@@ -245,11 +254,49 @@
   }
 
   startBtn.addEventListener('click', startRound);
+
+  // ---- Single-player: a local avatar driven by this screen's keyboard ----
+  function ensureSoloPlayer() {
+    if (soloId && players.has(soloId)) return;
+    soloId = 'solo-local';
+    players.set(soloId, makePlayer(soloId, 'You'));
+    refreshScoreboard();
+    refreshStartButton();
+  }
+  soloBtn.addEventListener('click', () => {
+    ensureSoloPlayer();
+    startRound();
+  });
+
+  const MOVE_KEYS = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'];
   window.addEventListener('keydown', (e) => {
-    if ((e.key === 'Enter' || e.key === ' ') && phase !== 'playing') {
+    // Enter starts (or restarts) a round from the lobby / results screen.
+    if (e.key === 'Enter' && phase !== 'playing') {
       e.preventDefault();
+      if (players.size === 0) ensureSoloPlayer();
       startRound();
+      return;
     }
+    const k = e.key.toLowerCase();
+    if (e.key === ' ') {
+      // Space = dash for the solo player (once we have one).
+      if (!soloId) return;
+      e.preventDefault();
+      const p = players.get(soloId);
+      if (p && phase === 'playing') {
+        const now = performance.now() / 1000;
+        if (now >= p.dashReadyAt) { p.dashUntil = now + DASH_TIME; p.dashReadyAt = now + DASH_COOLDOWN; }
+      }
+      return;
+    }
+    if (MOVE_KEYS.includes(k)) {
+      keysDown[k] = true;
+      if (soloId) e.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', (e) => {
+    const k = e.key.toLowerCase();
+    if (MOVE_KEYS.includes(k)) { keysDown[k] = false; if (soloId) e.preventDefault(); }
   });
 
   /* ---------------- Coins ---------------- */
@@ -273,6 +320,21 @@
   function update(dt, nowSec) {
     if (phase === 'playing') {
       ensureCoins();
+
+      // Drive the local solo player from the held keys.
+      if (soloId && players.has(soloId)) {
+        let x = 0, y = 0;
+        if (keysDown['arrowleft'] || keysDown['a']) x -= 1;
+        if (keysDown['arrowright'] || keysDown['d']) x += 1;
+        if (keysDown['arrowup'] || keysDown['w']) y -= 1;
+        if (keysDown['arrowdown'] || keysDown['s']) y += 1;
+        const m = Math.hypot(x, y);
+        if (m > 1) { x /= m; y /= m; }
+        const sp = players.get(soloId);
+        sp.dir.x = x;
+        sp.dir.y = y;
+      }
+
       players.forEach((p) => {
         const dashing = nowSec < p.dashUntil;
         const speed = dashing ? DASH_SPEED : BASE_SPEED;
@@ -403,13 +465,14 @@
 
   /* ---------------- Boot ---------------- */
   function boot() {
+    resize();
+    requestAnimationFrame(frame);
     if (typeof Peer === 'undefined') {
-      net.onError('Could not load the networking library. Check your internet connection and reload.');
+      // Networking library missing: online join is off, solo still available.
+      net.onError('Online join unavailable — you can still play solo below.');
       return;
     }
-    resize();
     net.start();
-    requestAnimationFrame(frame);
   }
   boot();
 })();
