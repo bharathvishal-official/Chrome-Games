@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Join — Coin Rush Arena</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="controller">
+  <div class="ctl-wrap">
+
+    <!-- Join form -->
+    <div class="ctl-join" id="joinView">
+      <div class="brand"><span class="dot"></span> BROWSER ARCADE</div>
+      <h1>Join the game</h1>
+
+      <div class="label">Room code (4 digits)</div>
+      <input class="field code-field" id="codeInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off" />
+
+      <div class="label">Your name</div>
+      <input class="field" id="nameInput" maxlength="12" placeholder="Player" autocomplete="off" />
+
+      <button class="btn" id="joinBtn">Join game</button>
+      <div class="msg" id="msg"></div>
+
+      <p style="color:var(--muted);font-size:13px;line-height:1.6">
+        Tip: the host screen shows a QR code — scan it with your phone camera and
+        this page opens with the code already filled in.
+      </p>
+    </div>
+
+    <!-- Controller pad -->
+    <div class="pad" id="padView">
+      <div class="pad-top">
+        <div class="who">
+          <span class="swatch" id="swatch" style="background:#37e6c9;color:#37e6c9"></span>
+          <span id="myName">Player</span>
+        </div>
+        <div class="status" id="padStatus">connected</div>
+        <div class="score" id="myScore">0</div>
+      </div>
+      <div class="pad-main" id="padMain">
+        <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
+        <button class="action" id="actionBtn">DASH</button>
+      </div>
+      <div class="pad-hint" id="padHint">Drag the stick to move · tap <b>DASH</b> for a burst</div>
+    </div>
+
+  </div>
+
+  <script src="js/lib/peerjs.min.js"></script>
+  <script src="js/net.js"></script>
+  <script src="js/controller.js"></script>
+</body>
+</html>

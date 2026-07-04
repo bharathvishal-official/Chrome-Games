@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Host — Coin Rush Arena</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div class="hud">
+    <div class="joinbox">
+      <div class="qr" id="qr"></div>
+      <div class="code" id="code">····</div>
+      <div class="hint">scan to join &nbsp;·&nbsp; or enter code at<br id="urlbreak"><span id="joinurl"></span></div>
+    </div>
+    <div class="scoreboard">
+      <h3>Players</h3>
+      <div id="scoreRows"><div class="empty">Waiting for players…</div></div>
+    </div>
+  </div>
+
+  <div class="timer" id="timer" style="display:none">1:30</div>
+
+  <div class="overlay" id="overlay">
+    <h2 id="ovTitle">Coin Rush Arena</h2>
+    <p class="sub" id="ovSub">Grab your phone, join the room, and get ready.</p>
+    <ul class="results" id="ovResults" style="display:none"></ul>
+    <button class="btn" id="startBtn" disabled>Waiting for players…</button>
+  </div>
+
+  <!-- Vendored libraries (no CDN needed): WebRTC signalling + QR generation -->
+  <script src="js/lib/peerjs.min.js"></script>
+  <script src="js/lib/qrcode.min.js"></script>
+  <script src="js/net.js"></script>
+  <script src="js/host.js"></script>
+</body>
+</html>
