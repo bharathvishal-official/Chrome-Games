@@ -1,0 +1,45 @@
+name: Deploy to GitHub Pages
+
+# Publishes the static site (repo root) to GitHub Pages.
+# Requires: Settings -> Pages -> "Build and deployment" -> Source = "GitHub Actions".
+
+on:
+  push:
+    branches:
+      - main
+      - claude/browser-arcade-qr-join-5d40am
+  workflow_dispatch:
+
+# Allow the workflow to publish Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; don't cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # The whole repo root is the site (plain static HTML/CSS/JS).
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
